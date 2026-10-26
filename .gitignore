@@ -9,3 +9,4 @@ crash.log
 local-test-key.pem
 .DS_Store
 node_modules/
+apps/control-plane/data/

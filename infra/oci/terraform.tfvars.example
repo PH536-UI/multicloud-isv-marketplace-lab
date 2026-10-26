@@ -1,12 +1,10 @@
 # Valores fictícios exclusivos para o floci-oci local.
-tenancy_ocid     = "ocid1.tenancy.oc1..flocilocal0000000000000000000000000000000000000"
-user_ocid        = "ocid1.user.oc1..flocilocal0000000000000000000000000000000000000000"
-fingerprint      = "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+tenancy_ocid     = "ocid1.tenancy.oc1..flocilocaltenancy0000000000000000000000000000000000000000"
+user_ocid        = "ocid1.user.oc1..flocilocaluser0000000000000000000000000000000000000000000000"
+fingerprint      = "aa:bb:cc:dd:ee:ff:00:11:22:33:44:55:66:77:88:99"
 private_key_path = "./local-test-key.pem"
-compartment_ocid = "ocid1.tenancy.oc1..flocilocal0000000000000000000000000000000000000"
-namespace        = "floci-local"
+compartment_ocid = "ocid1.tenancy.oc1..flocilocaltenancy0000000000000000000000000000000000000000"
 
-# O provider oficial OCI aponta para o emulador por client host override.
-client_host_overrides = {
-  "oci_object_storage.ObjectStorageClient" = "http://localhost:4599"
-}
+# Não adicione credenciais, OCIDs ou chaves OCI reais neste arquivo.
+# O host override não é uma variável HCL. Ele deve ser injetado no processo:
+# TF_VAR_CLIENT_HOST_OVERRIDES="oci_identity.IdentityClient=http://localhost:4599;oci_object_storage.ObjectStorageClient=http://localhost:4599"

@@ -1,0 +1,22 @@
+{
+  "name": "@ph-multicloud/control-plane",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Portable SaaS control plane for the Multi-Cloud ISV Marketplace Lab",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test",
+    "check": "node --check src/auth.js && node --check src/store.js && node --check src/marketplace.js && node --check src/billing.js && node --check src/adapters.js && node --check src/outbox.js && node --check src/server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@aws-sdk/client-marketplace-entitlement-service": "^3.973.0",
+    "@aws-sdk/client-marketplace-metering": "^3.973.0",
+    "oci-common": "^2.144.0",
+    "oci-marketplace": "^2.144.0",
+    "oci-self": "^2.144.0"
+  }
+}

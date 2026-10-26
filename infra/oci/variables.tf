@@ -1,44 +1,36 @@
 variable "tenancy_ocid" {
-  description = "OCID fictício para o emulador local."
+  description = "OCID fictício exclusivo do tenancy local no floci-oci."
   type        = string
 }
 
 variable "user_ocid" {
-  description = "OCID fictício para o emulador local."
+  description = "OCID fictício do usuário local que assina chamadas para o emulador."
   type        = string
 }
 
 variable "fingerprint" {
-  description = "Fingerprint fictício para o emulador local."
+  description = "Fingerprint fictício da chave descartável do laboratório."
   type        = string
 }
 
 variable "private_key_path" {
-  description = "Caminho para chave de teste local."
+  description = "Caminho local para uma chave de teste descartável, ignorada pelo Git."
   type        = string
 }
 
 variable "region" {
-  type    = string
-  default = "us-ashburn-1"
+  description = "Região OCI simulada pelo floci-oci."
+  type        = string
+  default     = "us-ashburn-1"
 }
 
 variable "compartment_ocid" {
-  type = string
-}
-
-variable "namespace" {
-  type    = string
-  default = "floci-local"
+  description = "Compartimento fictício usado pelo emulador local."
+  type        = string
 }
 
 variable "project" {
-  type    = string
-  default = "multicloud-isv"
-}
-
-variable "client_host_overrides" {
-  description = "Host overrides do SDK OCI para o floci-oci."
-  type        = map(string)
-  default     = {}
+  description = "Prefixo de recursos do laboratório."
+  type        = string
+  default     = "multicloud-isv"
 }

@@ -1,4 +1,36 @@
 services:
+  control-plane:
+    build:
+      context: ./apps/control-plane
+    container_name: multicloud-isv-control-plane
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+      AUTH_MODE: ${AUTH_MODE:-demo}
+      CONTROL_PLANE_AUDIENCE: ${CONTROL_PLANE_AUDIENCE:-local-lab}
+      STATE_FILE: /app/data/control-plane-state.json
+      OUTBOX_POLL_INTERVAL_MS: ${OUTBOX_POLL_INTERVAL_MS:-5000}
+      # record = validação local, production = chamadas aos SDKs oficiais.
+      MARKETPLACE_DELIVERY_MODE: ${MARKETPLACE_DELIVERY_MODE:-record}
+    volumes:
+      - control-plane-data:/app/data
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:8080/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    depends_on:
+      floci-aws:
+        condition: service_started
+      floci-oci:
+        condition: service_started
+
   floci-aws:
     image: floci/floci:latest
     container_name: multicloud-isv-floci-aws
@@ -20,4 +52,5 @@ services:
       FLOCI_OCI_STORAGE_MODE: memory
 
 volumes:
+  control-plane-data:
   floci-aws-data:
