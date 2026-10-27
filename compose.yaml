@@ -27,12 +27,12 @@ services:
       start_period: 5s
     depends_on:
       floci-aws:
-        condition: service_started
+        condition: service_healthy
       floci-oci:
-        condition: service_started
+        condition: service_healthy
 
   floci-aws:
-    image: floci/floci:latest
+    image: floci/floci:2.3.0
     container_name: multicloud-isv-floci-aws
     ports:
       - "4566:4566"
@@ -42,7 +42,7 @@ services:
       - floci-aws-data:/var/lib/floci
 
   floci-oci:
-    image: floci/floci-oci:latest
+    image: floci/floci-oci:0.5.0
     container_name: multicloud-isv-floci-oci
     ports:
       - "4599:4599"
