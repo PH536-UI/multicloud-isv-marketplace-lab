@@ -1,90 +1,66 @@
-# Control Plane portátil
+# Portable Control Plane
 
-API Node.js para demonstrar o domínio comum de um SaaS ISV multicloud.
+[Português (Brasil)](README.pt-BR.md) | English
 
-## O que implementa
+Node.js API that demonstrates the provider-neutral domain of a multi-cloud ISV SaaS.
 
-- Catálogo comum de planos: `starter`, `growth` e `enterprise`.
-- Lifecycle de tenants e entitlement independente do provedor.
-- Adaptadores de entrada para entitlement AWS e acordo de assinatura OCI.
-- Revogação que suspende o tenant e preserva a trilha de auditoria.
-- Medição idempotente por `usageKey`, com painéis comparáveis por provedor.
-- Persistência em JSON com escrita atômica.
-- Outbox durável, retomada após reinício e retry com backoff.
-- RBAC por permissões: `reader`, `operator` e `admin`.
+## Capabilities
 
-Por padrão, a entrega fica em modo `record`: o uso é aceito, persistido e processado pela outbox sem chamada comercial. Em `MARKETPLACE_DELIVERY_MODE=production`, o adapter AWS usa o SDK Marketplace Metering e o adapter OCI usa o SDK oficial `oci-self`, pelo cliente `PartnerIntegerationClient` e endpoint Self Service de submissão de uso. Esse modo exige runtime autorizado, identidade de workload e configuração comercial válidas.
+- Shared plan catalog: `starter`, `growth` and `enterprise`.
+- Provider-neutral tenant and entitlement lifecycle.
+- AWS entitlement and OCI subscription-agreement input adapters.
+- Revocation suspends a tenant and preserves its audit trail.
+- Idempotent usage metering using `usageKey`.
+- Atomic JSON persistence, durable outbox, restart recovery and retry with backoff.
+- Permission-based demonstration RBAC: `reader`, `operator` and `admin`.
 
-## Execução local
+The default delivery mode is `record`: usage is accepted, stored and processed without a commercial API call. `MARKETPLACE_DELIVERY_MODE=production` is reserved for an authorized production runtime with valid commercial configuration and workload identity. It is not a local-lab setting.
+
+## Run locally
 
 ```bash
-node --test
-PORT=8080 node src/server.js
+npm ci
+npm test
+npm run start
 ```
 
-Com Docker Compose, a API fica disponível em `http://localhost:8080`.
+The service listens on `http://localhost:8080`; `GET /health` is public. In PowerShell, use `npm.cmd` when `npm.ps1` is blocked.
 
-## Autorização de demonstração
+## Demonstration authorization
 
-Em `AUTH_MODE=demo`, use um Bearer token local:
+With `AUTH_MODE=demo`, local Bearer tokens are available only for this lab:
 
-| Papel | Token | Permissões |
+| Role | Token | Permission scope |
 |---|---|---|
-| Reader | `local-reader` | Ler planos, tenants, uso e painéis |
-| Operator | `local-operator` | Reader + receber eventos de marketplace e uso |
-| Admin | `local-admin` | Operator + suspender tenants |
+| Reader | `local-reader` | Read plans, tenants, usage and dashboards |
+| Operator | `local-operator` | Reader plus marketplace and usage intake |
+| Admin | `local-admin` | Operator plus tenant revocation |
 
-Em ambiente implantado, defina `AUTH_MODE=edge`. Nesse modo, o control plane só aceita a identidade já validada por uma camada de borda, por exemplo API Gateway/ALB com OIDC na AWS ou OCI API Gateway com IAM Identity Domains. A verificação de JWT, rotação de chaves e SSO ficam nessa borda, não no código de demonstração.
+For deployed environments set `AUTH_MODE=edge`, where a verified identity is passed by an edge layer such as API Gateway/ALB with OIDC on AWS or OCI API Gateway with IAM Identity Domains. JWT validation, signing-key rotation and SSO belong at that edge, not in the lab implementation.
 
-## Fluxo de demonstração
+## Local contracts
 
-```bash
-curl -X POST http://localhost:8080/v1/marketplace/aws/entitlements \
-  -H 'Authorization: Bearer local-operator' \
-  -H 'Content-Type: application/json' \
-  -d '{"customerIdentifier":"demo-customer","productCode":"demo-product","planId":"growth"}'
+| Provider | Provisioning input | Usage input |
+|---|---|---|
+| AWS | `customerIdentifier`, `productCode`, `planId` | `customerIdentifier`, `dimension`, `quantity`, `timestamp` |
+| OCI | `subscriberId`, `listingId`, `planId` | `subscriberId`, `metric`, `quantity`, `timestamp` |
 
-curl -X POST http://localhost:8080/v1/billing/aws/usage \
-  -H 'Authorization: Bearer local-operator' \
-  -H 'Content-Type: application/json' \
-  -d '{"customerIdentifier":"demo-customer","dimension":"requests","quantity":25,"timestamp":"2026-10-27T15:00:00Z","usageKey":"demo-aws-001"}'
-
-curl http://localhost:8080/v1/dashboards/aws \
-  -H 'Authorization: Bearer local-reader'
-```
-
-## Contrato de medição local
-
-AWS recebe `customerIdentifier`, `dimension`, `quantity` e `timestamp`. OCI recebe `subscriberId`, `metric`, `quantity` e `timestamp`. `usageKey` é opcional no laboratório, mas recomendado para retries previsíveis.
-
-O control plane somente aceita uso de tenant ativo, registra uma única vez cada chave de uso e devolve `duplicate: true` em reenvios. Esta é a regra comum, não uma tradução direta do payload comercial de qualquer marketplace.
-
-## Entrega comercial
-
-Na AWS, o fluxo real de onboarding troca o token de registro por dados do cliente usando `ResolveCustomer`, consulta direito com `GetEntitlements` e envia cobrança por APIs do AWS Marketplace Metering. O mapeamento do produto, credenciais IAM, retry, tratamento de registros não processados e observabilidade devem ficar num adapter AWS implantado.
-
-Na OCI, a publicação atribui oferta, medidor e unidade de medida. A submissão comercial de uso exige identificador idempotente, oferta, valor, moeda, início e fim do período em UTC e dimensão de uso. A API suporta envio unitário ou lote. O adapter implementado envia um registro por evento, usa `usageKey` como `opcRetryToken` e assina a chamada por OCI Resource Principal. O compartment é lido de `OCI_COMPARTMENT_ID`; nenhum segredo fica em código, fixtures ou arquivos de configuração.
-
-Uma conta de teste, listing limitado ou emulador não valida publicação, compra, cobrança, entitlement nem repasse financeiro reais.
+`usageKey` is optional in the lab but strongly recommended for predictable retries. A usage record is accepted only for an active tenant. Replaying its key returns `duplicate: true` and does not add a second record.
 
 ## Endpoints
 
-| Método | Rota | Permissão |
+| Method | Route | Permission |
 |---|---|---|
-| GET | `/health` | pública |
+| GET | `/health` | Public |
 | GET | `/v1/plans` | `plan:read` |
-| GET | `/v1/tenants` | `tenant:read` |
-| GET | `/v1/tenants/{id}` | `tenant:read` |
-| GET | `/v1/tenants/{id}/usage` | `tenant:read` |
-| GET | `/v1/dashboard` | `dashboard:read` |
-| GET | `/v1/dashboards/aws` | `dashboard:read` |
-| GET | `/v1/dashboards/oci` | `dashboard:read` |
-| POST | `/v1/marketplace/aws/entitlements` | `marketplace:write` |
-| POST | `/v1/marketplace/oci/agreements` | `marketplace:write` |
-| POST | `/v1/billing/aws/usage` | `billing:write` |
-| POST | `/v1/billing/oci/usage` | `billing:write` |
+| GET | `/v1/tenants`, `/v1/tenants/{id}`, `/v1/tenants/{id}/usage` | `tenant:read` |
+| GET | `/v1/dashboard`, `/v1/dashboards/aws`, `/v1/dashboards/oci`, `/v1/outbox` | `dashboard:read` |
+| POST | `/v1/marketplace/aws/entitlements`, `/v1/marketplace/oci/agreements` | `marketplace:write` |
+| POST | `/v1/billing/aws/usage`, `/v1/billing/oci/usage`, `/v1/outbox/process` | `billing:write` |
 | POST | `/v1/marketplace/{provider}/tenants/{id}/revoke` | `tenant:revoke` |
 
-## Limites desta entrega
+## Boundaries
 
-O estado local é persistido em arquivo JSON por escrita atômica e, no Compose, fica em volume nomeado. A outbox recupera itens que estavam em processamento e aplica retry com backoff. A retenção de auditoria, secrets manager, rate limit, assinatura de webhooks e observabilidade centralizada continuam como responsabilidades de implantação. Nenhum fluxo local prova publicação, compra, cobrança, entitlement ou repasse financeiro reais.
+The JSON store is suitable only for local demonstration. Production needs managed persistence, migrations, backup/restore, secret management, signed webhooks, rate limiting, central observability, retained audit records and real marketplace integration controls. No local test proves marketplace publishing, purchase, entitlement, billing or financial settlement.
+
+See the [validation guide](../../docs/VALIDATION.md).

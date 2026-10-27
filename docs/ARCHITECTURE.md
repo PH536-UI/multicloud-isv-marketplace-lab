@@ -1,28 +1,34 @@
-# Decisões de arquitetura
+# Architecture decisions
 
-## 001. Terraform é a fonte de verdade
+[Português (Brasil)](pt-BR/ARCHITECTURE.md) | English
 
-Cada nuvem tem uma raiz Terraform independente em `infra/aws` e `infra/oci`. Assim cada ambiente pode ser aplicado, testado e destruído sem acoplamento operacional.
+## 001. Terraform is the infrastructure source of truth
 
-## 002. Local first, cloud-compatible
+AWS and OCI have independent Terraform roots in `infra/aws` and `infra/oci`. Each environment can be initialized, applied, tested and destroyed without operational coupling.
 
-- AWS usa o provider oficial contra Floci em `localhost:4566`.
-- OCI usa o provider oficial contra floci-oci em `localhost:4599` com host override por cliente.
-- Nenhuma credencial ou conta cloud real é necessária nesta fase.
+## 002. Local-first, cloud-compatible
 
-## 003. Core portátil
+- AWS uses its official provider against Floci on `localhost:4566`.
+- OCI uses the official `oracle/oci` provider against floci-oci on `localhost:4599`, with SDK client host overrides.
+- A real cloud account or real credentials are not required for this lab stage.
 
-A futura API não chamará SDK de nuvem diretamente. Ela chamará adaptadores `AwsProvisioner` e `OciProvisioner`, evitando condicionais de provedor espalhadas pelo produto.
+## 003. Portable control-plane core
 
-## Fluxo alvo
+The core keeps provider-specific logic at adapter boundaries. Tenant lifecycle, plans, authorization, usage idempotency, audit and outbox semantics are shared. Provider adapters normalize AWS and OCI inputs into that common model.
 
-1. Usuário entra no portal.
-2. Cria ou escolhe tenant e plano.
-3. Seleciona AWS ou OCI.
-4. A API abre uma solicitação de provisionamento.
-5. Um worker chama o adaptador da nuvem escolhida.
-6. O painel exibe recursos, logs e health do tenant.
+## 004. Accept before delivery
 
-## Fora desta fase
+Usage is durably recorded with a stable `usageKey` before delivery is attempted. The outbox handles claiming, retry and backoff. This makes delivery restart-safe and prevents repeated client submissions from creating duplicate usage records.
 
-Listing real, billing, impostos, contrato comercial, aprovação de marketplace e credenciais de produção.
+## Target flow
+
+1. A customer subscribes through a marketplace or an equivalent local event is received.
+2. The control plane normalizes the provider event and activates a tenant.
+3. The tenant submits usage to the provider-specific API route.
+4. The control plane validates entitlement status and records usage once.
+5. An outbox worker delivers the record in the configured mode.
+6. Dashboards expose tenant state, accepted usage and delivery state.
+
+## Outside this phase
+
+Real marketplace listing approval, seller onboarding, contracts, taxes, commercial billing, financial settlement and production credentials.
