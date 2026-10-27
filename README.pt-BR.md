@@ -2,6 +2,8 @@
 
 [English](README.md) | Português (Brasil)
 
+[![CI do Control Plane](https://github.com/PH536-UI/multicloud-isv-marketplace-lab/actions/workflows/control-plane.yml/badge.svg?branch=main)](https://github.com/PH536-UI/multicloud-isv-marketplace-lab/actions/workflows/control-plane.yml)
+
 Laboratório de engenharia de software para um control plane SaaS ISV multicloud e portátil, orientado a AWS Marketplace e Oracle Cloud Infrastructure (OCI) Marketplace.
 
 > **Somente laboratório local.** Floci emula AWS e floci-oci emula OCI. Este repositório não comprova publicação em marketplace, entitlement comercial, cobrança, repasse, impostos ou aprovação de conta cloud.
