@@ -1,0 +1,1 @@
+@/home/daytona/workspace/multicloud-isv-marketplace-lab/EXECUTAR-AWS-WINDOWS.cmd
