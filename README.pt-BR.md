@@ -61,6 +61,15 @@ Os fluxos AWS e OCI foram exercitados localmente em modo de entrega `record`:
 4. Processar a outbox e obter `pending: 0`, `delivered: 1`.
 5. Revogar o tenant e confirmar que novo uso é rejeitado com HTTP 400.
 
+## Resultados locais validados
+
+| Fluxo de provedor local | Evidência exercitada | Resultado |
+| --- | --- | --- |
+| AWS via Floci | 25 requests, uso idempotente, outbox durável, suspensão e revogação de tenant | O uso duplicado foi identificado, a outbox chegou a `pending: 0` e `delivered: 1`, e o uso após a revogação retornou HTTP 400. |
+| OCI via floci-oci | 10 requests, uso idempotente, outbox durável, suspensão e revogação de tenant | O uso duplicado foi identificado, a outbox chegou a `pending: 0` e `delivered: 1`, e o uso após a revogação retornou HTTP 400. |
+
+Estes são resultados locais em emuladores, no modo de entrega `record`. Eles comprovam o fluxo e a resiliência do control plane, não publicação real em marketplace, compra, cobrança, repasse ou entitlement comercial.
+
 Veja o [guia de validação](docs/pt-BR/VALIDATION.md), o [guia do control plane](apps/control-plane/README.pt-BR.md), as [decisões de arquitetura](docs/pt-BR/ARCHITECTURE.md) e o [guia OCI local](infra/oci/README.pt-BR.md).
 
 ## Documentação em dois idiomas

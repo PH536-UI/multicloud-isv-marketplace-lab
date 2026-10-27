@@ -63,6 +63,15 @@ The local AWS and OCI flows have been exercised in `record` delivery mode:
 4. Process the outbox and obtain `pending: 0`, `delivered: 1`.
 5. Revoke the tenant and verify that new usage is rejected with HTTP 400.
 
+## Verified local results
+
+| Local provider flow | Evidence exercised | Result |
+| --- | --- | --- |
+| AWS via Floci | 25 requests, idempotent usage, durable outbox, tenant suspension and revocation | Duplicate usage was identified, the outbox reached `pending: 0` and `delivered: 1`, and post-revocation usage returned HTTP 400. |
+| OCI via floci-oci | 10 requests, idempotent usage, durable outbox, tenant suspension and revocation | Duplicate usage was identified, the outbox reached `pending: 0` and `delivered: 1`, and post-revocation usage returned HTTP 400. |
+
+These are local emulator results in `record` delivery mode. They are evidence of the control-plane flow and resilience behavior, not evidence of a real marketplace listing, purchase, billing, payout or entitlement.
+
 See the [validation guide](docs/VALIDATION.md), [control-plane guide](apps/control-plane/README.md), [architecture decisions](docs/ARCHITECTURE.md), and [local OCI guide](infra/oci/README.md).
 
 ## Documentation languages
