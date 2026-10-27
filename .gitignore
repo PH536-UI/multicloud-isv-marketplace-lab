@@ -1,5 +1,6 @@
 .env
 .terraform/
+.tools/
 *.tfstate
 *.tfstate.*
 *.tfvars
