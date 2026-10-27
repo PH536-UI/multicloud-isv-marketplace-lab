@@ -1,61 +1,76 @@
 # Multi-Cloud ISV Marketplace Lab
 
-Laboratório de engenharia de software para um SaaS multicloud, com base portátil para AWS e Oracle Cloud Infrastructure (OCI).
+[Português (Brasil)](README.pt-BR.md) | English
 
-> Ambiente local: Floci para AWS e floci-oci para OCI. Não representa publicação, cobrança, entitlement ou aprovação real em marketplaces.
+A software-engineering lab for a portable multi-cloud ISV SaaS control plane, designed around AWS Marketplace and Oracle Cloud Infrastructure (OCI) Marketplace.
 
-## Objetivo
+> **Local lab only.** Floci emulates AWS and floci-oci emulates OCI. This repository does not prove marketplace publication, commercial entitlements, billing, payouts, tax handling, or cloud-account approval.
 
-Demonstrar um SaaS de ISV com tenants, planos e um control plane portável, entregue com Terraform e validado em dois emuladores locais:
+## What is implemented
 
-- AWS em `http://localhost:4566`
-- OCI em `http://localhost:4599`
+- Portable Node.js control plane with tenants, plans and local RBAC.
+- Provider adapters for AWS entitlement events and OCI subscription agreements.
+- Tenant suspension or revocation with an audit trail.
+- Idempotent usage acceptance through `usageKey`.
+- Durable JSON outbox, retry with backoff and restart recovery.
+- Provider dashboards for AWS and OCI.
+- Terraform roots for AWS/Floci and OCI/floci-oci.
 
-## Arquitetura inicial
-
-```text
-Cliente
-  │
-Portal SaaS / Control Plane
-  ├── Runtime AWS: S3 + SQS + DynamoDB (Floci)
-  └── Runtime OCI: Object Storage (floci-oci)
-
-Terraform
-  ├── infra/aws
-  └── infra/oci
-```
-
-## Estrutura
+## Architecture
 
 ```text
-apps/       # API, portal e workers, nas próximas etapas
-docs/       # decisões de arquitetura
-infra/aws/  # Terraform para AWS/Floci
-infra/oci/  # Terraform para OCI/floci-oci
-scripts/    # verificações locais
-compose.yaml
+Client
+  |
+SaaS portal / Control plane
+  |- HTTP API: tenants, plans, RBAC, audit
+  |- Metering: idempotency, durable outbox, retries
+  |- Marketplace adapters: AWS and OCI
+  |- AWS runtime: S3 + SQS + DynamoDB via Floci
+  `- OCI runtime: Object Storage via floci-oci
+
+Terraform: infra/aws and infra/oci
 ```
 
-## Início rápido
+## Quick start
 
 ```bash
 cp .env.example .env
 docker compose up -d
 ./scripts/health.sh
-
-terraform -chdir=infra/aws init
-terraform -chdir=infra/aws apply
 ```
 
-A raiz OCI usa o provider oficial Oracle e host overrides para o floci-oci. Veja `infra/oci/README.md` antes de executar.
+Run only the control plane outside Docker:
 
-## Limites honestos
+```bash
+cd apps/control-plane
+npm ci
+npm run start
+```
 
-O laboratório prova protocolos, SDKs, Terraform e provisionamento local. Cadastro de vendedor, contratos, impostos, compra, cobrança, entitlement e aprovação de listing são funções dos marketplaces oficiais.
+On Windows PowerShell, use `npm.cmd ci` and `npm.cmd run start` if the execution policy blocks `npm.ps1`. Enter commands only. Do not paste the `PS C:\...>` prompt, output, bullets, or error text into the terminal.
 
-## Próximas entregas
+## Local validation evidence
 
-1. API de tenants e planos.
-2. Dois painéis espelhados: AWS e OCI.
-3. Adaptadores de licença/marketplace.
-4. CI, testes e evidências de execução.
+The local AWS and OCI flows have been exercised in `record` delivery mode:
+
+1. Create an entitlement or agreement and an active tenant.
+2. Submit usage with a stable `usageKey`.
+3. Resubmit the same usage and receive `duplicate: true`.
+4. Process the outbox and obtain `pending: 0`, `delivered: 1`.
+5. Revoke the tenant and verify that new usage is rejected with HTTP 400.
+
+See the [validation guide](docs/VALIDATION.md), [control-plane guide](apps/control-plane/README.md), [architecture decisions](docs/ARCHITECTURE.md), and [local OCI guide](infra/oci/README.md).
+
+## Documentation languages
+
+Every maintained guide has an English canonical version and a Brazilian Portuguese counterpart:
+
+- [Project guide, PT-BR](README.pt-BR.md)
+- [Control plane, PT-BR](apps/control-plane/README.pt-BR.md)
+- [Architecture, PT-BR](docs/pt-BR/ARCHITECTURE.md)
+- [Validation, PT-BR](docs/pt-BR/VALIDATION.md)
+- [OCI local guide, PT-BR](infra/oci/README.pt-BR.md)
+
+## Honest boundaries
+
+This lab validates local protocol flow, adapter boundaries, Terraform configuration and resilience behavior. A real AWS Marketplace or OCI Marketplace offering requires separate seller onboarding, contractual and tax setup, marketplace approval, production identities, security review, commercial configuration and operational monitoring.
