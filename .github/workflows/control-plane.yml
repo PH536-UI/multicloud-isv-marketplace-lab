@@ -1,4 +1,4 @@
-name: Control Plane CI
+name: Control Plane CI / CI do Control Plane
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   test-control-plane:
-    name: Test portable control plane
+    name: Test portable control plane / Testar control plane portatil
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -21,15 +21,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Validate JavaScript syntax
+      - name: Validate JavaScript syntax / Validar sintaxe JavaScript
         run: |
           node --check src/auth.js
           node --check src/store.js
           node --check src/marketplace.js
           node --check src/billing.js
           node --check src/server.js
-      - name: Run domain contract tests
+      - name: Run domain contract tests / Executar testes de contrato
         run: node --test
-      - name: Build container image
+      - name: Build container image / Construir imagem de container
         working-directory: .
         run: docker build -t multicloud-isv-control-plane:ci ./apps/control-plane
