@@ -1,0 +1,27 @@
+services:
+  floci-aws:
+    image: floci/floci:latest
+    container_name: multicloud-isv-floci-aws
+    ports:
+      - "4566:4566"
+    environment:
+      FLOCI_HOSTNAME: localhost
+    volumes:
+      - floci-aws-data:/var/lib/floci
+
+  floci-oci:
+    image: floci/floci-oci:latest
+    container_name: multicloud-isv-floci-oci
+    ports:
+      - "4599:4599"
+    environment:
+      FLOCI_OCI_DEFAULT_REGION: ${FLOCI_OCI_DEFAULT_REGION:-us-ashburn-1}
+      FLOCI_OCI_DEFAULT_TENANCY_ID: ${FLOCI_OCI_DEFAULT_TENANCY_ID:-ocid1.tenancy.oc1..flocilocal0000000000000000000000000000000000000}
+      FLOCI_OCI_STORAGE_MODE: persistent
+      FLOCI_OCI_STORAGE_PERSISTENT_PATH: /data
+    volumes:
+      - floci-oci-data:/data
+
+volumes:
+  floci-aws-data:
+  floci-oci-data:

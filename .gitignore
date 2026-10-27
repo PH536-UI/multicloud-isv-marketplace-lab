@@ -1,0 +1,10 @@
+.env
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+local-test-key.pem
+.DS_Store
+node_modules/

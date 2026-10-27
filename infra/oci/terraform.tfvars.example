@@ -1,0 +1,12 @@
+# Valores fictícios exclusivos para o floci-oci local.
+tenancy_ocid     = "ocid1.tenancy.oc1..flocilocal0000000000000000000000000000000000000"
+user_ocid        = "ocid1.user.oc1..flocilocal0000000000000000000000000000000000000000"
+fingerprint      = "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+private_key_path = "./local-test-key.pem"
+compartment_ocid = "ocid1.tenancy.oc1..flocilocal0000000000000000000000000000000000000"
+namespace        = "floci-local"
+
+# O provider oficial OCI aponta para o emulador por client host override.
+client_host_overrides = {
+  "oci_object_storage.ObjectStorageClient" = "http://localhost:4599"
+}
