@@ -35,6 +35,12 @@ SaaS portal / Control plane
 Terraform: infra/aws and infra/oci
 ```
 
+### Architecture visual
+
+![Architecture overview](assets/architecture-overview.svg)
+
+The visual shows the portable control plane branching to the AWS/Floci and OCI/floci-oci local flows. It is intentionally scoped to local emulation.
+
 ## Quick start
 
 ```bash
